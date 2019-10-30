@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package transferservice;
+
+service TransferValidator {
+    rpc pay (Transfer) returns (TransferValidation) {
+    }
+}
+
+message Transfer {
+    int64 origin = 1;
+    int64 destination = 2;
+    int32 amount = 3;
+    enum TransferType {
+        CARD = 0;
+        WIRE = 1;
+    }
+
+    TransferType type = 4;
+}
+message TransferValidation {
+    Transfer transfer = 1;
+    bool validated = 2;
+    string reason = 3;
+}

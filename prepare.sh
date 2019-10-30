@@ -1,0 +1,1 @@
+go build -o tfc-transfer-validator -a -installsuffix cgo ./main/main.go
