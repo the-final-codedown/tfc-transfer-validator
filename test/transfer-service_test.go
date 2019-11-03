@@ -76,8 +76,8 @@ func TestServerStart(t *testing.T) {
 		t.Fail()
 	}
 	_, err = cl.Pay(context.TODO(), &transferService.Transfer{
-		Origin:      1,
-		Destination: 0,
+		Origin:      "1",
+		Destination: "0",
 		Amount:      0,
 	})
 	if err != nil {
@@ -92,8 +92,8 @@ func TestServerCanPay(t *testing.T) {
 	defer server.GracefulStop()
 
 	transfer := transferService.Transfer{
-		Origin:      1,
-		Destination: 2,
+		Origin:      "1",
+		Destination: "2",
 		Amount:      100,
 		Type:        transferService.Transfer_CARD,
 	}
@@ -114,8 +114,8 @@ func TestClientCantPay(t *testing.T) {
 	defer server.GracefulStop()
 
 	transfer := transferService.Transfer{
-		Origin:      1,
-		Destination: 2,
+		Origin:      "1",
+		Destination: "2",
 		Amount:      10000,
 		Type:        transferService.Transfer_CARD,
 	}

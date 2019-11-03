@@ -60,6 +60,11 @@ func InitService(capServiceAddress string) (*grpc.Server, error) {
 
 func (t TransferValidator) Pay(context context.Context, transfer *transferService.Transfer) (*transferService.TransferValidation, error) {
 	println("Validation")
+	println(transfer.Origin)
+	println(transfer.Destination)
+	println(transfer.Amount)
+	println(transfer.Type)
+
 	paymentCap, err := t.capReader.GetCap(transfer.Origin)
 
 	if err != nil {
@@ -82,7 +87,7 @@ func (t TransferValidator) Pay(context context.Context, transfer *transferServic
 
 	downscale := &capUpdater.CapDownscale{
 		AccountID: transfer.Origin,
-		Delta:     transfer.Amount,
+		Value:     transfer.Amount,
 	}
 	_, _ = t.capUpdaterClient.DownscaleCap(context, downscale)
 	println("Validated")

@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "github.com/jnewmano/grpc-json-proxy/codec"
 	"github.com/the-final-codedown/tfc-transfer-validator/transfer-validator"
 	"os"
 )

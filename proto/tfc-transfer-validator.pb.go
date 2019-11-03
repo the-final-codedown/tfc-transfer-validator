@@ -52,8 +52,8 @@ func (Transfer_TransferType) EnumDescriptor() ([]byte, []int) {
 }
 
 type Transfer struct {
-	Origin               int64                 `protobuf:"varint,1,opt,name=origin,proto3" json:"origin,omitempty"`
-	Destination          int64                 `protobuf:"varint,2,opt,name=destination,proto3" json:"destination,omitempty"`
+	Origin               string                `protobuf:"bytes,1,opt,name=origin,proto3" json:"origin,omitempty"`
+	Destination          string                `protobuf:"bytes,2,opt,name=destination,proto3" json:"destination,omitempty"`
 	Amount               int32                 `protobuf:"varint,3,opt,name=amount,proto3" json:"amount,omitempty"`
 	Type                 Transfer_TransferType `protobuf:"varint,4,opt,name=type,proto3,enum=tfc.transfer.validator.Transfer_TransferType" json:"type,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}              `json:"-"`
@@ -94,18 +94,18 @@ func (m *Transfer) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_Transfer proto.InternalMessageInfo
 
-func (m *Transfer) GetOrigin() int64 {
+func (m *Transfer) GetOrigin() string {
 	if m != nil {
 		return m.Origin
 	}
-	return 0
+	return ""
 }
 
-func (m *Transfer) GetDestination() int64 {
+func (m *Transfer) GetDestination() string {
 	if m != nil {
 		return m.Destination
 	}
-	return 0
+	return ""
 }
 
 func (m *Transfer) GetAmount() int32 {
@@ -199,7 +199,7 @@ var fileDescriptor_90d5e49b340eb586 = []byte{
 	0xc9, 0xd7, 0x2f, 0x49, 0x4b, 0xd6, 0x2d, 0x29, 0x4a, 0xcc, 0x2b, 0x4e, 0x4b, 0x2d, 0xd2, 0x2d,
 	0x4b, 0xcc, 0xc9, 0x4c, 0x49, 0x2c, 0xc9, 0x2f, 0xd2, 0x03, 0x4b, 0x0a, 0x89, 0x95, 0xa4, 0x25,
 	0xeb, 0xc1, 0x64, 0xf5, 0xe0, 0xb2, 0x4a, 0x87, 0x19, 0xb9, 0x38, 0x42, 0xa0, 0xc2, 0x42, 0x62,
-	0x5c, 0x6c, 0xf9, 0x45, 0x99, 0xe9, 0x99, 0x79, 0x12, 0x8c, 0x0a, 0x8c, 0x1a, 0xcc, 0x41, 0x50,
+	0x5c, 0x6c, 0xf9, 0x45, 0x99, 0xe9, 0x99, 0x79, 0x12, 0x8c, 0x0a, 0x8c, 0x1a, 0x9c, 0x41, 0x50,
 	0x9e, 0x90, 0x02, 0x17, 0x77, 0x4a, 0x6a, 0x71, 0x49, 0x66, 0x5e, 0x62, 0x49, 0x66, 0x7e, 0x9e,
 	0x04, 0x13, 0x58, 0x12, 0x59, 0x08, 0xa4, 0x33, 0x31, 0x37, 0xbf, 0x34, 0xaf, 0x44, 0x82, 0x59,
 	0x81, 0x51, 0x83, 0x35, 0x08, 0xca, 0x13, 0x72, 0xe4, 0x62, 0x29, 0xa9, 0x2c, 0x48, 0x95, 0x60,
@@ -213,7 +213,7 @@ var fileDescriptor_90d5e49b340eb586 = []byte{
 	0x5a, 0x54, 0x96, 0x99, 0x9c, 0x2a, 0x14, 0xca, 0xc5, 0x1c, 0x90, 0x58, 0x29, 0x44, 0xd0, 0x11,
 	0x52, 0x5a, 0x84, 0x54, 0x20, 0x3c, 0xa9, 0xc4, 0xe0, 0x24, 0x70, 0xe2, 0x91, 0x1c, 0xe3, 0x85,
 	0x47, 0x72, 0x8c, 0x0f, 0x1e, 0xc9, 0x31, 0xce, 0x78, 0x2c, 0xc7, 0x90, 0xc4, 0x06, 0x8e, 0x74,
-	0x63, 0x40, 0x00, 0x00, 0x00, 0xff, 0xff, 0x80, 0x7c, 0xba, 0x87, 0x1a, 0x02, 0x00, 0x00,
+	0x63, 0x40, 0x00, 0x00, 0x00, 0xff, 0xff, 0xe4, 0x4f, 0xc2, 0x34, 0x1a, 0x02, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -330,15 +330,19 @@ func (m *Transfer) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x18
 	}
-	if m.Destination != 0 {
-		i = encodeVarintTfcTransferValidator(dAtA, i, uint64(m.Destination))
+	if len(m.Destination) > 0 {
+		i -= len(m.Destination)
+		copy(dAtA[i:], m.Destination)
+		i = encodeVarintTfcTransferValidator(dAtA, i, uint64(len(m.Destination)))
 		i--
-		dAtA[i] = 0x10
+		dAtA[i] = 0x12
 	}
-	if m.Origin != 0 {
-		i = encodeVarintTfcTransferValidator(dAtA, i, uint64(m.Origin))
+	if len(m.Origin) > 0 {
+		i -= len(m.Origin)
+		copy(dAtA[i:], m.Origin)
+		i = encodeVarintTfcTransferValidator(dAtA, i, uint64(len(m.Origin)))
 		i--
-		dAtA[i] = 0x8
+		dAtA[i] = 0xa
 	}
 	return len(dAtA) - i, nil
 }
@@ -416,11 +420,13 @@ func (m *Transfer) Size() (n int) {
 	}
 	var l int
 	_ = l
-	if m.Origin != 0 {
-		n += 1 + sovTfcTransferValidator(uint64(m.Origin))
+	l = len(m.Origin)
+	if l > 0 {
+		n += 1 + l + sovTfcTransferValidator(uint64(l))
 	}
-	if m.Destination != 0 {
-		n += 1 + sovTfcTransferValidator(uint64(m.Destination))
+	l = len(m.Destination)
+	if l > 0 {
+		n += 1 + l + sovTfcTransferValidator(uint64(l))
 	}
 	if m.Amount != 0 {
 		n += 1 + sovTfcTransferValidator(uint64(m.Amount))
@@ -493,10 +499,10 @@ func (m *Transfer) Unmarshal(dAtA []byte) error {
 		}
 		switch fieldNum {
 		case 1:
-			if wireType != 0 {
+			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Origin", wireType)
 			}
-			m.Origin = 0
+			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTfcTransferValidator
@@ -506,16 +512,29 @@ func (m *Transfer) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.Origin |= int64(b&0x7F) << shift
+				stringLen |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTfcTransferValidator
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTfcTransferValidator
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Origin = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
 		case 2:
-			if wireType != 0 {
+			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Destination", wireType)
 			}
-			m.Destination = 0
+			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTfcTransferValidator
@@ -525,11 +544,24 @@ func (m *Transfer) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.Destination |= int64(b&0x7F) << shift
+				stringLen |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTfcTransferValidator
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTfcTransferValidator
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Destination = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
 		case 3:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Amount", wireType)

@@ -2,10 +2,17 @@ package cap_reader
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"io/ioutil"
+
+	//cap "github.com/the-final-codedown/tfc-cap-updater/proto/tfc/cap/updater"
+
 	"log"
+	"net/http"
 	"time"
 )
 
@@ -34,12 +41,42 @@ func DisconnectReader() {
 
 }
 
-func (repository *CapReader) GetCap(id int64) (int32, error) {
-	accountFilter := bson.D{{"accountID", id}}
+func (repository *CapReader) GetCap(id string) (int32, error) {
+	accountFilter := bson.D{{"_id", id}}
 	result := struct {
 		AccountID int64
 		Value     int32
 	}{}
 	err := repository.collection.FindOne(context.Background(), accountFilter).Decode(&result)
+	if err != nil {
+
+		_ = CreateCap(id)
+	}
 	return result.Value, err
+}
+
+func CreateCap(id string) error {
+
+	resp, err := http.Get("http://app:8080/accounts/" + id + "/cap")
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	result := struct {
+		Money int32
+		AmountSlidingWindow     int32
+	}{}
+	s1, _:= ioutil.ReadAll(resp.Body)
+	if err := json.Unmarshal(s1, &result); err != nil {
+		log.Println(err)
+	}
+	//println(resp.Body.Read(result))
+	println("Response body : " + fmt.Sprint(result.Money) + " " + fmt.Sprint(result.AmountSlidingWindow))
+
+	/*_ = cap.CapDownscale{
+		AccountID: id,
+		Value:     0,
+	}*/
+	return err
 }
