@@ -2,11 +2,9 @@ package transfer_validator
 
 import (
 	"context"
-	"flag"
-	tfc_cap_updater "github.com/the-final-codedown/tfc-cap-updater/proto/tfc/cap/updater"
-	cap_reader "github.com/the-final-codedown/tfc-transfer-validator/cap-reader"
-	cap_updater "github.com/the-final-codedown/tfc-transfer-validator/cap-updater"
-	transferservice "github.com/the-final-codedown/tfc-transfer-validator/proto"
+	capUpdater "github.com/the-final-codedown/tfc-cap-updater/proto/tfc/cap/updater"
+	"github.com/the-final-codedown/tfc-transfer-validator/cap-reader"
+	transferService "github.com/the-final-codedown/tfc-transfer-validator/proto"
 	"google.golang.org/grpc"
 	"log"
 	"net"
@@ -14,7 +12,7 @@ import (
 )
 
 type TransferValidator struct {
-	capUpdaterClient tfc_cap_updater.CapUpdaterServiceClient
+	capUpdaterClient capUpdater.CapUpdaterServiceClient
 	capReader        cap_reader.CapReader
 }
 
@@ -24,8 +22,8 @@ const defaultDBHost = "mongodb://localhost:27017"
 
 var ShutdownChan chan bool
 
-func InitService(cap_service_adress string) (*grpc.Server, error) {
-	flag.Parse()
+func InitService(capServiceAddress string) (*grpc.Server, error) {
+
 	port := os.Getenv("SERVER_PORT")
 	if port == "" {
 		port = defaultPort
@@ -35,52 +33,61 @@ func InitService(cap_service_adress string) (*grpc.Server, error) {
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	capUpdaterClient, err := cap_updater.GetCapStub(cap_service_adress)
+
+	service, err := grpc.Dial(capServiceAddress, grpc.WithInsecure())
+	capUpdaterClient := capUpdater.NewCapUpdaterServiceClient(service)
+
 	uri := os.Getenv("DB_HOST")
 	if uri == "" {
 		uri = defaultDBHost
 	}
+
 	capReader := cap_reader.InitializeReader(uri)
 	validator := &TransferValidator{capUpdaterClient: capUpdaterClient, capReader: *capReader}
 
-	grpcServer := grpc.NewServer()
-	transferservice.RegisterTransferValidatorServer(grpcServer, validator)
+	server := grpc.NewServer()
+	transferService.RegisterTransferValidatorServiceServer(server, validator)
+
 	ShutdownChan = make(chan bool)
 	go func() {
-		grpcServer.Serve(lis)
+		server.Serve(lis)
 		ShutdownChan <- true
 	}()
 
-	return grpcServer, err
+	return server, err
 
 }
 
-func (t TransferValidator) Pay(context context.Context, transfer *transferservice.Transfer) (*transferservice.TransferValidation, error) {
+func (t TransferValidator) Pay(context context.Context, transfer *transferService.Transfer) (*transferService.TransferValidation, error) {
 	println("Validation")
-	cap, err := t.capReader.GetCap(transfer.Origin)
+	paymentCap, err := t.capReader.GetCap(transfer.Origin)
+
 	if err != nil {
 		println("Error fetching cap")
 		println(err)
-		return &transferservice.TransferValidation{
+		return &transferService.TransferValidation{
 			Transfer:  transfer,
 			Validated: false,
 			Reason:    "Error fetching cap",
 		}, err
 	}
-	if cap < transfer.Amount {
-		return &transferservice.TransferValidation{
+
+	if paymentCap < transfer.Amount {
+		return &transferService.TransferValidation{
 			Transfer:  transfer,
 			Validated: false,
-			Reason:    "Exeeding Cap",
+			Reason:    "Exceeding Cap",
 		}, nil
 	}
-	downscale := &tfc_cap_updater.CapDownscale{
+
+	downscale := &capUpdater.CapDownscale{
 		AccountID: transfer.Origin,
 		Delta:     transfer.Amount,
 	}
 	_, _ = t.capUpdaterClient.DownscaleCap(context, downscale)
 	println("Validated")
-	return &transferservice.TransferValidation{
+
+	return &transferService.TransferValidation{
 		Transfer:  transfer,
 		Validated: true,
 	}, nil

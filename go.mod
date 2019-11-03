@@ -2,6 +2,8 @@ module github.com/the-final-codedown/tfc-transfer-validator
 
 go 1.13
 
+replace github.com/the-final-codedown/tfc-cap-updater => ../tfc-cap-updater
+
 require (
 	github.com/golang/protobuf v1.3.2
 	github.com/micro/go-micro v1.13.2

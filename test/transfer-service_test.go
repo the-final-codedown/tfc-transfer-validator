@@ -2,8 +2,8 @@ package test
 
 import (
 	"context"
-	transferservice "github.com/the-final-codedown/tfc-transfer-validator/proto"
-	transfer_validator "github.com/the-final-codedown/tfc-transfer-validator/transfer-validator"
+	transferService "github.com/the-final-codedown/tfc-transfer-validator/proto"
+	transferValidator "github.com/the-final-codedown/tfc-transfer-validator/transfer-validator"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -15,28 +15,28 @@ import (
 )
 
 const (
-	test_mongo_adress string = "mongodb://localhost:27017"
+	mongoAddress string = "mongodb://localhost:27017"
 )
 
 func setup() {
 
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(test_mongo_adress))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoAddress))
 	if err != nil {
 		log.Panic(err)
 	}
 	capCollection := client.Database("tfc").Collection("cap")
-	account_one_cap := bson.D{
+	accountOneCap := bson.D{
 		{"accountID", 1},
 		{"value", 300},
 	}
-	_, _ = capCollection.InsertOne(context.Background(), account_one_cap)
+	_, _ = capCollection.InsertOne(context.Background(), accountOneCap)
 	client.Disconnect(context.Background())
 }
 
 func teardown() {
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(test_mongo_adress))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoAddress))
 	if err != nil {
 		log.Panic(err)
 	}
@@ -57,7 +57,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestServerStart(t *testing.T) {
-	server, err := transfer_validator.InitService("localhost:50051")
+	server, err := transferValidator.InitService("localhost:50051")
 	if err != nil {
 		t.Log("Error Creating Server")
 		t.Fail()
@@ -70,12 +70,12 @@ func TestServerStart(t *testing.T) {
 	}
 
 	// use the generated client stub
-	cl := transferservice.NewTransferValidatorClient(service)
+	cl := transferService.NewTransferValidatorServiceClient(service)
 	if cl == nil {
 		t.Log("Failed client creation")
 		t.Fail()
 	}
-	_, err = cl.Pay(context.TODO(), &transferservice.Transfer{
+	_, err = cl.Pay(context.TODO(), &transferService.Transfer{
 		Origin:      1,
 		Destination: 0,
 		Amount:      0,
@@ -87,15 +87,15 @@ func TestServerStart(t *testing.T) {
 }
 
 func TestServerCanPay(t *testing.T) {
-	server, _ := transfer_validator.InitService("localhost:50051")
+	server, _ := transferValidator.InitService("localhost:50051")
 	client, _ := initialiseClient()
 	defer server.GracefulStop()
 
-	transfer := transferservice.Transfer{
+	transfer := transferService.Transfer{
 		Origin:      1,
 		Destination: 2,
 		Amount:      100,
-		Type:        transferservice.Transfer_CARD,
+		Type:        transferService.Transfer_CARD,
 	}
 
 	result, err := client.Pay(context.Background(), &transfer)
@@ -109,15 +109,15 @@ func TestServerCanPay(t *testing.T) {
 }
 
 func TestClientCantPay(t *testing.T) {
-	server, _ := transfer_validator.InitService("localhost:50051")
+	server, _ := transferValidator.InitService("localhost:50051")
 	client, _ := initialiseClient()
 	defer server.GracefulStop()
 
-	transfer := transferservice.Transfer{
+	transfer := transferService.Transfer{
 		Origin:      1,
 		Destination: 2,
 		Amount:      10000,
-		Type:        transferservice.Transfer_CARD,
+		Type:        transferService.Transfer_CARD,
 	}
 	result, err := client.Pay(context.Background(), &transfer)
 	if err != nil {
@@ -131,19 +131,20 @@ func TestClientCantPay(t *testing.T) {
 /*
 	redefined a utils true assertion function
 */
-func assertTrue(t *testing.T, actual bool, message string, on_fail func()) {
+func assertTrue(t *testing.T, actual bool, message string, onFail func()) {
 	if !actual {
 		t.Log(message)
-		if on_fail != nil {
-			on_fail()
+		if onFail != nil {
+			onFail()
 		}
 		t.Fail()
 	}
 }
-func initialiseClient() (transferservice.TransferValidatorClient, error) {
+
+func initialiseClient() (transferService.TransferValidatorServiceClient, error) {
 	service, err := grpc.Dial("localhost:50052", grpc.WithInsecure())
 
 	// use the generated client stub
-	cl := transferservice.NewTransferValidatorClient(service)
+	cl := transferService.NewTransferValidatorServiceClient(service)
 	return cl, err
 }

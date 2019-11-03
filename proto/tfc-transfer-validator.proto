@@ -1,10 +1,9 @@
 syntax = "proto3";
 
-package transferservice;
+package tfc.transfer.validator;
 
-service TransferValidator {
-    rpc pay (Transfer) returns (TransferValidation) {
-    }
+service TransferValidatorService {
+    rpc Pay (Transfer) returns (TransferValidation) {}
 }
 
 message Transfer {
@@ -15,9 +14,9 @@ message Transfer {
         CARD = 0;
         WIRE = 1;
     }
-
     TransferType type = 4;
 }
+
 message TransferValidation {
     Transfer transfer = 1;
     bool validated = 2;
