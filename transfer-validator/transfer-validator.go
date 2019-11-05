@@ -1,4 +1,4 @@
-package transfer_validator
+package transfervalidator
 
 import (
 	"context"
@@ -67,12 +67,7 @@ func InitService(capServiceAddress string) (*grpc.Server, error) {
 }
 
 func (t TransferValidator) Pay(context context.Context, transfer *transferService.Transfer) (*transferService.TransferValidation, error) {
-	println("Validation")
-	println(transfer.Origin)
-	println(transfer.Destination)
-	println(transfer.Amount)
-	println(transfer.Type)
-
+	println("Payment validation")
 	paymentCap, err := t.capReader.GetCap(transfer.Origin)
 
 	if err != nil {
@@ -99,17 +94,13 @@ func (t TransferValidator) Pay(context context.Context, transfer *transferServic
 		AccountID: transfer.Origin,
 		Value:     transfer.Amount,
 	}
-	_, err = t.capUpdaterClient.DownscaleCap(context, downscale);
+	resp, err := t.capUpdaterClient.DownscaleCap(context, downscale)
 	if err != nil {
-		log.Println("failed updating cap %s", err);
-		return &transferService.TransferValidation{
-			Transfer:  transfer,
-			Validated: false,
-			Reason:    "Failed updating cap",
-		}, err;
+		log.Println(err)
+	} else {
+		log.Println(resp.Accepted)
 	}
-	go t.kafkaClient.SendTransaction(&transaction);
-	println("Validated")
+	println("Payment validated")
 
 	return &transferService.TransferValidation{
 		Transfer:  transfer,
