@@ -1,4 +1,4 @@
-package transfer_validator
+package transfervalidator
 
 import (
 	"context"
@@ -13,7 +13,7 @@ import (
 
 type TransferValidator struct {
 	capUpdaterClient capUpdater.CapUpdaterServiceClient
-	capReader        cap_reader.CapReader
+	capReader        capreader.CapReader
 }
 
 const defaultPort string = ":50052"
@@ -42,8 +42,8 @@ func InitService(capServiceAddress string) (*grpc.Server, error) {
 		uri = defaultDBHost
 	}
 
-	capReader := cap_reader.InitializeReader(uri)
-	validator := &TransferValidator{capUpdaterClient: capUpdaterClient, capReader: *capReader}
+	reader := capreader.InitializeReader(uri)
+	validator := &TransferValidator{capUpdaterClient: capUpdaterClient, capReader: *reader}
 
 	server := grpc.NewServer()
 	transferService.RegisterTransferValidatorServiceServer(server, validator)
@@ -59,12 +59,7 @@ func InitService(capServiceAddress string) (*grpc.Server, error) {
 }
 
 func (t TransferValidator) Pay(context context.Context, transfer *transferService.Transfer) (*transferService.TransferValidation, error) {
-	println("Validation")
-	println(transfer.Origin)
-	println(transfer.Destination)
-	println(transfer.Amount)
-	println(transfer.Type)
-
+	println("Payment validation")
 	paymentCap, err := t.capReader.GetCap(transfer.Origin)
 
 	if err != nil {
@@ -89,8 +84,13 @@ func (t TransferValidator) Pay(context context.Context, transfer *transferServic
 		AccountID: transfer.Origin,
 		Value:     transfer.Amount,
 	}
-	_, _ = t.capUpdaterClient.DownscaleCap(context, downscale)
-	println("Validated")
+	resp, err := t.capUpdaterClient.DownscaleCap(context, downscale)
+	if err != nil {
+		log.Println(err)
+	} else {
+		log.Println(resp.Accepted)
+	}
+	println("Payment validated")
 
 	return &transferService.TransferValidation{
 		Transfer:  transfer,

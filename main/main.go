@@ -14,12 +14,12 @@ func main() {
 	if capServiceAddress == "" {
 		capServiceAddress = defaultCapServiceAddress
 	}
-	_, err := transfer_validator.InitService(capServiceAddress)
+	_, err := transfervalidator.InitService(capServiceAddress)
 	if err != nil {
 		println("Failed starting service", err)
 	} else {
 		println("Transfer validator started")
-		stopped := <-transfer_validator.ShutdownChan
+		stopped := <-transfervalidator.ShutdownChan
 		if stopped {
 			println("Gracefully stopped")
 		}

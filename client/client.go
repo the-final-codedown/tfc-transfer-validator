@@ -18,8 +18,8 @@ func basicPayingClient() {
 	}
 	cl := transferService.NewTransferValidatorServiceClient(service)
 	_, err = cl.Pay(context.TODO(), &transferService.Transfer{
-		Origin:      1,
-		Destination: 0,
+		Origin:      "1",
+		Destination: "0",
 		Amount:      400,
 	})
 	if err != nil {

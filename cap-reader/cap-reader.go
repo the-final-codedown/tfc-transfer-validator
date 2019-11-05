@@ -1,4 +1,4 @@
-package cap_reader
+package capreader
 
 import (
 	"context"
@@ -8,6 +8,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"io/ioutil"
+	"math"
 
 	//cap "github.com/the-final-codedown/tfc-cap-updater/proto/tfc/cap/updater"
 
@@ -42,41 +43,53 @@ func DisconnectReader() {
 }
 
 func (repository *CapReader) GetCap(id string) (int32, error) {
-	accountFilter := bson.D{{"_id", id}}
+	accountFilter := bson.M{"accountid": id}
 	result := struct {
-		AccountID int64
+		AccountID string
 		Value     int32
+		Money     int32
 	}{}
-	err := repository.collection.FindOne(context.Background(), accountFilter).Decode(&result)
+	err := repository.collection.FindOne(context.Background(), &accountFilter).Decode(&result)
 	if err != nil {
-
-		_ = CreateCap(id)
+		log.Println("Cap for given id not found")
+		return repository.CreateCap(id)
 	}
 	return result.Value, err
 }
 
-func CreateCap(id string) error {
+func (repository *CapReader) CreateCap(id string) (int32, error) {
 
 	resp, err := http.Get("http://app:8080/accounts/" + id + "/cap")
 	if err != nil {
+		log.Println("error in get")
 		log.Println(err)
-		return err
+		return 0, err
 	}
 
 	result := struct {
-		Money int32
-		AmountSlidingWindow     int32
+		Money               int32
+		AmountSlidingWindow int32
 	}{}
-	s1, _:= ioutil.ReadAll(resp.Body)
-	if err := json.Unmarshal(s1, &result); err != nil {
+	body, _ := ioutil.ReadAll(resp.Body)
+	if err := json.Unmarshal(body, &result); err != nil {
+		log.Println("Error in parsing GET cap request")
+	}
+
+	capStruct := struct {
+		AccountID string
+		Value     int32
+		Money     int32
+	}{id,
+		int32(math.Min(float64(result.Money), float64(result.AmountSlidingWindow))),
+		result.Money}
+
+	println("Response body : " + fmt.Sprint(result.Money) + " " + fmt.Sprint(result.AmountSlidingWindow))
+	println("Cap object : " + fmt.Sprint(capStruct.AccountID) + " " + fmt.Sprint(capStruct.Value) + " " + fmt.Sprint(capStruct.Money))
+	_, err = repository.collection.InsertOne(context.Background(), capStruct)
+	if err != nil {
+		log.Println("Error in inserting cap")
 		log.Println(err)
 	}
-	//println(resp.Body.Read(result))
-	println("Response body : " + fmt.Sprint(result.Money) + " " + fmt.Sprint(result.AmountSlidingWindow))
 
-	/*_ = cap.CapDownscale{
-		AccountID: id,
-		Value:     0,
-	}*/
-	return err
+	return capStruct.Value, err
 }

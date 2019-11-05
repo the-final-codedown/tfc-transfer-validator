@@ -27,7 +27,7 @@ func setup() {
 	}
 	capCollection := client.Database("tfc").Collection("cap")
 	accountOneCap := bson.D{
-		{"accountID", 1},
+		{"accountid", 1},
 		{"value", 300},
 	}
 	_, _ = capCollection.InsertOne(context.Background(), accountOneCap)
@@ -41,7 +41,7 @@ func teardown() {
 		log.Panic(err)
 	}
 	capCollection := client.Database("tfc").Collection("cap")
-	filter := bson.D{{"accountID", 1}}
+	filter := bson.D{{"accountid", 1}}
 	_, _ = capCollection.DeleteMany(context.Background(), filter)
 	client.Disconnect(context.Background())
 }
