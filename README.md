@@ -13,7 +13,8 @@ If imports fail initialise the go module
 `go mod init github.com/the-final-codedown/tfc-transfer-validator`
 
 To update the proto generated code run the following
-`protoc -I. --go_out=plugins=micro:. --micro_out=. transfer_service\transfer-service.proto`
+`protoc -I. --go_out=plugins=micro:. --micro_out=. transfer_service\transfer-
+service.proto`
 
 To run the server you must will need the go micro api to provide a gateway
 `go get github.com/micro/micro`

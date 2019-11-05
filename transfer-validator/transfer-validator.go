@@ -3,17 +3,19 @@ package transfer_validator
 import (
 	"context"
 	capUpdater "github.com/the-final-codedown/tfc-cap-updater/proto/tfc/cap/updater"
-	"github.com/the-final-codedown/tfc-transfer-validator/cap-reader"
 	transferService "github.com/the-final-codedown/tfc-transfer-validator/proto"
+	services "github.com/the-final-codedown/tfc-transfer-validator/service"
 	"google.golang.org/grpc"
 	"log"
 	"net"
 	"os"
+	"time"
 )
 
 type TransferValidator struct {
 	capUpdaterClient capUpdater.CapUpdaterServiceClient
-	capReader        cap_reader.CapReader
+	capReader        services.CapReader
+	kafkaClient      services.KafkaClient
 }
 
 const defaultPort string = ":50052"
@@ -31,7 +33,8 @@ func InitService(capServiceAddress string) (*grpc.Server, error) {
 
 	lis, err := net.Listen("tcp", port)
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		log.Println("failed to listen: %v", err)
+		return nil,err;
 	}
 
 	service, err := grpc.Dial(capServiceAddress, grpc.WithInsecure())
@@ -42,8 +45,13 @@ func InitService(capServiceAddress string) (*grpc.Server, error) {
 		uri = defaultDBHost
 	}
 
-	capReader := cap_reader.InitializeReader(uri)
-	validator := &TransferValidator{capUpdaterClient: capUpdaterClient, capReader: *capReader}
+	capReader := services.InitializeReader(uri)
+	kafkaClient, err := services.InitializeKafkaClient("kafka-transaction", "localhost:9092");
+	if err != nil {
+		log.Println("failed to connect to kafka%v", err)
+		return nil, err;
+	}
+	validator := &TransferValidator{capUpdaterClient: capUpdaterClient, capReader: *capReader, kafkaClient: *kafkaClient}
 
 	server := grpc.NewServer()
 	transferService.RegisterTransferValidatorServiceServer(server, validator)
@@ -85,11 +93,22 @@ func (t TransferValidator) Pay(context context.Context, transfer *transferServic
 		}, nil
 	}
 
+	transaction := services.TransactionDTO{Date: time.Now()};
+	transaction.FromTransfer(transfer);
 	downscale := &capUpdater.CapDownscale{
 		AccountID: transfer.Origin,
 		Value:     transfer.Amount,
 	}
-	_, _ = t.capUpdaterClient.DownscaleCap(context, downscale)
+	_, err = t.capUpdaterClient.DownscaleCap(context, downscale);
+	if err != nil {
+		log.Println("failed updating cap %s", err);
+		return &transferService.TransferValidation{
+			Transfer:  transfer,
+			Validated: false,
+			Reason:    "Failed updating cap",
+		}, err;
+	}
+	go t.kafkaClient.SendTransaction(&transaction);
 	println("Validated")
 
 	return &transferService.TransferValidation{

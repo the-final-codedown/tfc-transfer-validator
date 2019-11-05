@@ -1,4 +1,4 @@
-package cap_reader
+package services
 
 import (
 	"context"
@@ -44,12 +44,10 @@ func DisconnectReader() {
 func (repository *CapReader) GetCap(id string) (int32, error) {
 	accountFilter := bson.D{{"_id", id}}
 	result := struct {
-		AccountID int64
 		Value     int32
 	}{}
 	err := repository.collection.FindOne(context.Background(), accountFilter).Decode(&result)
 	if err != nil {
-
 		_ = CreateCap(id)
 	}
 	return result.Value, err
