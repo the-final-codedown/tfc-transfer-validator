@@ -29,7 +29,9 @@ var client *mongo.Client
 
 func InitializeReader(mongoAddress string) *CapReader {
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoAddress))
+	options := options.Client().ApplyURI(mongoAddress)
+	options.SetMaxPoolSize(10)
+	client, err := mongo.Connect(ctx, options)
 	if err != nil {
 		log.Panic(err)
 	}
