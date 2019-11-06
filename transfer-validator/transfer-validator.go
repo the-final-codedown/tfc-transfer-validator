@@ -21,6 +21,7 @@ type TransferValidator struct {
 const defaultPort string = ":50052"
 
 const defaultDBHost = "mongodb://localhost:27017"
+const defaultKafkaHost = "localhost:9092"
 
 var ShutdownChan chan bool
 
@@ -34,7 +35,7 @@ func InitService(capServiceAddress string) (*grpc.Server, error) {
 	lis, err := net.Listen("tcp", port)
 	if err != nil {
 		log.Println("failed to listen: %v", err)
-		return nil,err;
+		return nil, err
 	}
 
 	service, err := grpc.Dial(capServiceAddress, grpc.WithInsecure())
@@ -46,10 +47,14 @@ func InitService(capServiceAddress string) (*grpc.Server, error) {
 	}
 
 	capReader := services.InitializeReader(uri)
-	kafkaClient, err := services.InitializeKafkaClient("kafka-transaction", "localhost:9092");
+	uri = os.Getenv("KAFKA_HOST")
+	if uri == "" {
+		uri = defaultKafkaHost
+	}
+	kafkaClient, err := services.InitializeKafkaClient("kafka-transaction", uri)
 	if err != nil {
 		log.Println("failed to connect to kafka%v", err)
-		return nil, err;
+		return nil, err
 	}
 	validator := &TransferValidator{capUpdaterClient: capUpdaterClient, capReader: *capReader, kafkaClient: *kafkaClient}
 
@@ -88,8 +93,12 @@ func (t TransferValidator) Pay(context context.Context, transfer *transferServic
 		}, nil
 	}
 
-	transaction := services.TransactionDTO{Date: time.Now()};
-	transaction.FromTransfer(transfer);
+	transaction := services.TransactionDTO{Date: time.Now()}
+	transaction.FromTransfer(transfer)
+	err = t.kafkaClient.SendTransaction(&transaction)
+	if err != nil {
+		log.Println("error sending to main app", err)
+	}
 	downscale := &capUpdater.CapDownscale{
 		AccountID: transfer.Origin,
 		Value:     transfer.Amount,
@@ -100,6 +109,7 @@ func (t TransferValidator) Pay(context context.Context, transfer *transferServic
 	} else {
 		log.Println(resp.Accepted)
 	}
+
 	println("Payment validated")
 
 	return &transferService.TransferValidation{
