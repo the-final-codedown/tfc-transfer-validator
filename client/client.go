@@ -11,12 +11,15 @@ import (
 	"time"
 )
 
+/**
+boiler plate testing package,
+Should update the origin and target ids on trial for real accounts ids
+
+*/
 func main() {
-	basicPayingClient()
-	//stop :=  make(chan bosol)
-	//go basicKafkaListener(stop);
-	//basicKafkaPublisher();
-	//_ = <-stop
+	originid := "5dc31fad8bc1bb0001d4d853"
+	destinationId := "5dc31fad8bc1bb0001d4d854"
+	basicPayingClient(originid, destinationId)
 }
 
 func basicKafkaPublisher() {
@@ -61,16 +64,17 @@ func basicKafkaListener(stop chan bool) {
 	_ = conn.Close()
 }
 
-func basicPayingClient() {
+func basicPayingClient(originid string, destinationId string) {
 	// use the generated client stub
 	service, err := grpc.Dial("localhost:50052", grpc.WithInsecure())
 	if err != nil {
 		println(err)
 	}
 	cl := transferService.NewTransferValidatorServiceClient(service)
+
 	answer, err := cl.Pay(context.TODO(), &transferService.Transfer{
-		Origin:      "5dc31fad8bc1bb0001d4d853",
-		Destination: "5dc31fad8bc1bb0001d4d854",
+		Origin:      originid,
+		Destination: destinationId,
 		Amount:      200,
 	})
 	if err != nil {
