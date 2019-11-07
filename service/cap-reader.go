@@ -61,7 +61,7 @@ func (repository *CapReader) GetCap(id string) (int32, error) {
 
 func (repository *CapReader) CreateCap(id string) (int32, error) {
 
-	resp, err := http.Get("http://app:8080/accounts/" + id + "/cap")
+	resp, err := http.Get("http://app:8081/accounts/" + id + "/cap")
 	if err != nil {
 		log.Println("error in get")
 		log.Println(err)
