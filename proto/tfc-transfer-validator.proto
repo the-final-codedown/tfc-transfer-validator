@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package tfc.transfer.validator;
+
+service TransferValidatorService {
+    rpc Pay (Transfer) returns (TransferValidation) {}
+}
+
+message Transfer {
+    string origin = 1;
+    string destination = 2;
+    int32 amount = 3;
+    enum TransferType {
+        CARD = 0;
+        WIRE = 1;
+    }
+    TransferType type = 4;
+}
+
+message TransferValidation {
+    Transfer transfer = 1;
+    bool validated = 2;
+    string reason = 3;
+}
