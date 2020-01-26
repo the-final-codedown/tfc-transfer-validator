@@ -20,7 +20,7 @@ type TransferValidator struct {
 
 const defaultPort string = ":50052"
 
-const defaultDBHost = "mongodb://localhost:27017"
+const defaultHost = "mongodb://localhost:27017"
 const defaultKafkaHost = "localhost:9092"
 
 var ShutdownChan chan bool
@@ -41,10 +41,12 @@ func InitService(capServiceAddress string) (*grpc.Server, error) {
 	service, err := grpc.Dial(capServiceAddress, grpc.WithInsecure())
 	capUpdaterClient := capUpdater.NewCapUpdaterServiceClient(service)
 
-	uri := os.Getenv("DB_HOST")
-	if uri == "" {
-		uri = defaultDBHost
-	}
+	uri := ""
+    if os.Getenv("DB_HOST") != "" && os.Getenv("DB_PORT") != "" {
+        uri = "mongodb://" + os.Getenv("DB_HOST") + ":" + os.Getenv("DB_PORT")
+    } else {
+        uri = defaultHost
+    }
 
 	capReader := services.InitializeReader(uri)
 	uri = os.Getenv("KAFKA_HOST")

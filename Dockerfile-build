@@ -8,9 +8,16 @@ ADD go.mod .
 ADD go.sum .
 ADD ./vendor ./vendor
 
-ADD . .
+ADD ./tfc-cap-updater ../tfc-cap-updater
 
+ADD ./proto ./proto
 RUN protoc -I. --gofast_out=plugins=grpc:. proto/tfc-transfer-validator.proto
+
+ADD ./main ./main
+ADD ./client ./client
+ADD ./service ./service
+ADD ./transfer-validator ./transfer-validator
+
 RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -mod vendor -o tfc-transfer-validator -a -installsuffix cgo ./main/main.go
 
 FROM alpine:3.11.3
