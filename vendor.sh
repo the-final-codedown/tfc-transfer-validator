@@ -1,8 +1,8 @@
 #!/bin/bash
 
-mkdir -p vendor
+mkdir -p src/vendor
 docker run --rm \
-  -v "$(pwd)":/home/golang \
+  -v "$(pwd)/src":/home/golang \
   -v "$(pwd)/tfc-cap-updater":/home/tfc-cap-updater \
   -w /home/golang \
   --entrypoint "sh" \

@@ -2,7 +2,7 @@ package transfervalidator
 
 import (
 	"context"
-	capUpdater "github.com/the-final-codedown/tfc-cap-updater/proto/tfc/cap/updater"
+	capUpdater "github.com/the-final-codedown/tfc-cap-updater/proto"
 	transferService "github.com/the-final-codedown/tfc-transfer-validator/proto"
 	services "github.com/the-final-codedown/tfc-transfer-validator/service"
 	"google.golang.org/grpc"
@@ -19,7 +19,6 @@ type TransferValidator struct {
 }
 
 const defaultPort string = ":50052"
-
 const defaultHost = "mongodb://localhost:27017"
 const defaultKafkaHost = "localhost:9092"
 
@@ -86,7 +85,7 @@ func (t TransferValidator) Pay(context context.Context, transfer *transferServic
 			Reason:    "Error fetching cap",
 		}, err
 	}
-
+	log.Println("Payment cap : ", paymentCap)
 	if paymentCap < transfer.Amount {
 		return &transferService.TransferValidation{
 			Transfer:  transfer,
