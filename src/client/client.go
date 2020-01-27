@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/segmentio/kafka-go"
 	transferService "github.com/the-final-codedown/tfc-transfer-validator/proto"
-	services "github.com/the-final-codedown/tfc-transfer-validator/service"
+	services "github.com/the-final-codedown/tfc-transfer-validator/services"
 	"google.golang.org/grpc"
 	"log"
 	"time"

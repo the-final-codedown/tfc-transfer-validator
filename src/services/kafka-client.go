@@ -12,11 +12,11 @@ type KafkaClient struct {
 
 func (kafkaClient *KafkaClient) SendTransaction(transaction *TransactionDTO) error {
 	bytes, e := json.Marshal(transaction)
-	if (e != nil) {
-		return e;
+	if e != nil {
+		return e
 	}
 	err := kafkaClient.writer.WriteMessages(context.Background(), kafka.Message{Value: bytes,})
-	return err;
+	return err
 }
 
 func InitializeKafkaClient(topic string, kafkaBroker string) (*KafkaClient, error) {

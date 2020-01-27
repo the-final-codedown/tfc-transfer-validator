@@ -224,7 +224,7 @@ var _ grpc.ClientConn
 // is compatible with the grpc package it is being compiled against.
 const _ = grpc.SupportPackageIsVersion4
 
-// TransferValidatorServiceClient is the client API for TransferValidatorService service.
+// TransferValidatorServiceClient is the client API for TransferValidatorService services.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type TransferValidatorServiceClient interface {
@@ -248,7 +248,7 @@ func (c *transferValidatorServiceClient) Pay(ctx context.Context, in *Transfer, 
 	return out, nil
 }
 
-// TransferValidatorServiceServer is the server API for TransferValidatorService service.
+// TransferValidatorServiceServer is the server API for TransferValidatorService services.
 type TransferValidatorServiceServer interface {
 	Pay(context.Context, *Transfer) (*TransferValidation, error)
 }

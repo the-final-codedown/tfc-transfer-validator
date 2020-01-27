@@ -13,12 +13,10 @@ ADD ./tfc-cap-updater ../tfc-cap-updater
 ADD src/proto ./proto
 RUN protoc -I. --gofast_out=plugins=grpc:. proto/tfc-transfer-validator.proto
 
-ADD src/main ./main
-ADD src/client ./client
-ADD src/service ./service
-ADD src/transfer-validator ./transfer-validator
+ADD src/*.go ./
+ADD src/services ./services
 
-RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -mod vendor -o tfc-transfer-validator -a -installsuffix cgo ./main/main.go
+RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -mod vendor -o tfc-transfer-validator -a -installsuffix cgo main.go handler.go server.go
 
 FROM alpine:3.11.3
 ENV app=tfc-transfer-validator
