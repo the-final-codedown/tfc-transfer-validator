@@ -13,3 +13,6 @@ buildNumber.properties
 !/.mvn/wrapper/maven-wrapper.jar
 
 tfc-transfer-validator
+
+vendor/
+tfc-cap-updater/

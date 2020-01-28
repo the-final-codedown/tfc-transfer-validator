@@ -2,7 +2,7 @@ package main
 
 import (
 	_ "github.com/jnewmano/grpc-json-proxy/codec"
-	"github.com/the-final-codedown/tfc-transfer-validator/transfer-validator"
+	"log"
 	"os"
 )
 
@@ -14,14 +14,14 @@ func main() {
 	if capServiceAddress == "" {
 		capServiceAddress = defaultCapServiceAddress
 	}
-	_, err := transfervalidator.InitService(capServiceAddress)
+	_, err := InitService(capServiceAddress)
 	if err != nil {
-		println("Failed starting service", err)
+		log.Println("Failed starting services", err)
 	} else {
-		println("Transfer validator started")
-		stopped := <-transfervalidator.ShutdownChan
+		log.Println("Transfer validator started")
+		stopped := <-ShutdownChan
 		if stopped {
-			println("Gracefully stopped")
+			log.Println("Gracefully stopped")
 		}
 	}
 }

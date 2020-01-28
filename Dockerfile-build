@@ -1,0 +1,27 @@
+FROM golang:1.13.6-alpine3.11 as builder
+RUN apk --no-cache add git gcc make protobuf
+RUN go get github.com/gogo/protobuf/protoc-gen-gofast
+
+WORKDIR /app
+
+ADD src/go.mod .
+ADD src/go.sum .
+ADD src/vendor ./vendor
+
+ADD ./tfc-cap-updater ../tfc-cap-updater
+
+ADD src/proto ./proto
+RUN protoc -I. --gofast_out=plugins=grpc:. proto/tfc-transfer-validator.proto
+
+ADD src/*.go ./
+ADD src/services ./services
+
+RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -mod vendor -o tfc-transfer-validator -a -installsuffix cgo main.go handler.go server.go
+
+FROM alpine:3.11.3
+ENV app=tfc-transfer-validator
+
+WORKDIR /app
+COPY --from=builder /app/$app ./$app
+
+CMD ./$app

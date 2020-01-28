@@ -2,8 +2,8 @@ package test
 
 import (
 	"context"
+	"github.com/the-final-codedown/tfc-transfer-validator"
 	transferService "github.com/the-final-codedown/tfc-transfer-validator/proto"
-	transferValidator "github.com/the-final-codedown/tfc-transfer-validator/transfer-validator"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -57,7 +57,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestServerStart(t *testing.T) {
-	server, err := transferValidator.InitService("localhost:50051")
+	server, err := main.InitService("localhost:50051")
 	if err != nil {
 		t.Log("Error Creating Server")
 		t.Fail()
@@ -87,7 +87,7 @@ func TestServerStart(t *testing.T) {
 }
 
 func TestServerCanPay(t *testing.T) {
-	server, _ := transferValidator.InitService("localhost:50051")
+	server, _ := main.InitService("localhost:50051")
 	client, _ := initialiseClient()
 	defer server.GracefulStop()
 
@@ -109,7 +109,7 @@ func TestServerCanPay(t *testing.T) {
 }
 
 func TestClientCantPay(t *testing.T) {
-	server, _ := transferValidator.InitService("localhost:50051")
+	server, _ := main.InitService("localhost:50051")
 	client, _ := initialiseClient()
 	defer server.GracefulStop()
 
