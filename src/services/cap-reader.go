@@ -10,6 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"io/ioutil"
 	"math"
+	"strings"
 
 	//cap "github.com/the-final-codedown/tfc-cap-updater/proto/tfc/cap/updater"
 
@@ -68,7 +69,7 @@ func (repository *CapReader) CreateCap(id string) (int32, error) {
 		return 0, err
 	}
 	log.Println(resp.Status)
-	if resp.Status != "200" {
+	if !strings.Contains(resp.Status, "200") {
 		return 0, errors.New(resp.Status)
 	}
 	result := struct {
