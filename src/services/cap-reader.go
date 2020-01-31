@@ -21,6 +21,7 @@ import (
 
 type CapReader struct {
 	collection *mongo.Collection
+	bankUri    string
 }
 
 type CapReaderInterface interface {
@@ -29,7 +30,7 @@ type CapReaderInterface interface {
 
 var client *mongo.Client
 
-func InitializeReader(mongoAddress string) *CapReader {
+func InitializeReader(mongoAddress string, bankUri string) *CapReader {
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
 	mongoOptions := options.Client().ApplyURI(mongoAddress)
 	mongoOptions.SetMaxPoolSize(10)
@@ -38,12 +39,11 @@ func InitializeReader(mongoAddress string) *CapReader {
 		log.Panic(err)
 	}
 	capCollection := client.Database("tfc").Collection("cap")
-	return &CapReader{collection: capCollection}
+	return &CapReader{collection: capCollection, bankUri: bankUri}
 }
 
 func DisconnectReader() {
 	defer client.Disconnect(context.TODO())
-
 }
 
 func (repository *CapReader) GetCap(id string) (int32, error) {
@@ -62,14 +62,12 @@ func (repository *CapReader) GetCap(id string) (int32, error) {
 }
 
 func (repository *CapReader) CreateCap(id string) (int32, error) {
-
-	resp, err := http.Get("http://app:8081/accounts/" + id + "/cap")
+	resp, err := http.Get(repository.bankUri + "/accounts/" + id + "/cap")
 	if err != nil {
 		log.Println("Error in cap GET : ", err)
 		return 0, err
 	}
-	log.Println(resp.Status)
-	if !strings.Contains(resp.Status, "200") {
+	if resp.StatusCode != http.StatusOK {
 		return 0, errors.New(resp.Status)
 	}
 	result := struct {

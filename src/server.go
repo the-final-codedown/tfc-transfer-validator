@@ -44,7 +44,10 @@ func InitService(capServiceAddress string) (*grpc.Server, error) {
 	} else {
 		uri = defaultHost
 	}
-	capReader := services.InitializeReader(uri)
+
+	bankUri := "http://" + os.Getenv("BANK_URI")
+	println("Bank uri : %v", bankUri)
+	capReader := services.InitializeReader(uri, bankUri)
 
 	uri = os.Getenv("KAFKA_HOST")
 	if uri == "" {
