@@ -10,8 +10,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"io/ioutil"
 	"math"
-	"strings"
-
 	//cap "github.com/the-final-codedown/tfc-cap-updater/proto/tfc/cap/updater"
 
 	"log"
@@ -47,7 +45,7 @@ func DisconnectReader() {
 }
 
 func (repository *CapReader) GetCap(id string) (int32, error) {
-	accountFilter := bson.M{"accountid": id}
+	accountFilter := bson.M{"_id": id}
 	result := struct {
 		AccountID string
 		Value     int32
@@ -80,10 +78,12 @@ func (repository *CapReader) CreateCap(id string) (int32, error) {
 	}
 
 	capStruct := struct {
+		Id       string `bson:"_id,omitempty"`
 		AccountID string
 		Value     int32
 		Money     int32
 	}{id,
+		id,
 		int32(math.Min(float64(result.Money), float64(result.AmountSlidingWindow))),
 		result.Money}
 
